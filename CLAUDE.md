@@ -166,8 +166,10 @@ page:
 - Wi-Fi;
 - a non-US keyboard;
 - the no-TPM and failure pages on the live system; these are covered only
-  offscreen;
-- the agent enrolling with the written files (P7).
+  offscreen.
+
+**P7 ran on this installer.** The agent enrolled with the two files it wrote,
+and they carried a real token. The proof is `OS/image/proof/p7/`.
 
 Follow-ups are in `HANDOFF.md`.
 
