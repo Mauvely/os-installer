@@ -1,0 +1,185 @@
+02:36:47 Mauvely OS installer 0.1.0
+02:36:47 Disk: /dev/vda · vda · serial TARGET · 68719476736 bytes
+02:36:47 Server: http://10.0.2.2:8798
+02:36:47 $ podman images --format json
+02:36:47 [
+02:36:47     {
+02:36:47         "Id": "21d4f5951a3db7024caa58794b41af7811a6df73d6e89b50b3933d3afc1bb1b5",
+02:36:47         "ParentId": "",
+02:36:47         "RepoTags": null,
+02:36:47         "RepoDigests": [
+02:36:47             "localhost/mauvely-os@sha256:59062bdb843495ea3574d12c3c179f3eb76de52444f331030d4989b5b4ec5629",
+02:36:47             "localhost/mauvely-os@sha256:f99196cac131cf0a72f210115c3b7248c4288258ee69f5cc09032515096737a7"
+02:36:47         ],
+02:36:47         "Size": 7474292969,
+02:36:47         "SharedSize": 0,
+02:36:47         "VirtualSize": 7474292969,
+02:36:47         "Labels": {
+02:36:47             "containers.bootc": "1",
+02:36:47             "io.buildah.version": "1.45.1",
+02:36:47             "org.opencontainers.image.licenses": "GPL-3.0-or-later",
+02:36:47             "org.opencontainers.image.source": "https://github.com/Mauvely/os-image",
+02:36:47             "org.opencontainers.image.title": "Mauvely OS",
+02:36:47             "org.opencontainers.image.version": "44.20261013.0",
+02:36:47             "ostree.bootable": "1",
+02:36:47             "ostree.commit": "369e4ee5dc7f5644800f531c64de28b6293577e68b0748b1c94d0a24ace56e7c",
+02:36:47             "ostree.final-diffid": "sha256:12787d84fa137cd5649a9005efe98ec9d05ea46245fdc50aecb7dd007f2035b1",
+02:36:47             "ostree.linux": "7.2.9-201.fc44.x86_64",
+02:36:47             "quay.expires-after": "4w",
+02:36:47             "rpmostree.inputhash": "5036d8fdfcb608a74cb8ba264b473bc6cfbafc4adf610253a7fa3e11b517b31f"
+02:36:47         },
+02:36:47         "Containers": 0,
+02:36:47         "Digest": "sha256:59062bdb843495ea3574d12c3c179f3eb76de52444f331030d4989b5b4ec5629",
+02:36:47         "History": [
+02:36:47             "localhost/mauvely-os:p6-p5-test"
+02:36:47         ],
+02:36:47         "Names": [
+02:36:47             "localhost/mauvely-os:p6-p5-test"
+02:36:47         ],
+02:36:47         "Created": 1791944427,
+02:36:47         "CreatedAt": "2026-10-14T02:20:27Z"
+02:36:47     }
+02:36:47 ]
+02:36:47 exit 0
+02:36:47 Payload: localhost/mauvely-os:p6-p5-test
+02:36:47 $ bootc install to-disk --source-imgref containers-storage:localhost/mauvely-os:p6-p5-test --wipe --block-setup tpm2-luks --filesystem xfs --target-imgref registry.invalid/mauvely/os:stable --skip-fetch-check /dev/vda
+02:36:47 Installing image: docker://registry.invalid/mauvely/os:stable
+02:36:47 Wiping /dev/vda
+02:36:47 Wiping device /dev/vda
+02:36:47 Block setup: tpm2-luks
+02:36:47        Size: 68719476736
+02:36:47      Serial: TARGET
+02:36:47       Model: <unknown>
+02:36:47  Partitions: UUID
+02:36:47 Checking that no-one is using this disk right now ... OK
+02:36:47 Disk /dev/vda: 64 GiB, 68719476736 bytes, 134217728 sectors
+02:36:47 Units: sectors of 1 * 512 = 512 bytes
+02:36:47 Sector size (logical/physical): 512 bytes / 512 bytes
+02:36:47 I/O size (minimum/optimal): 512 bytes / 512 bytes
+02:36:47 >>> Script header accepted.
+02:36:47 >>> Script header accepted.
+02:36:47 >>> Created a new GPT disklabel (GUID: 894E00EE-4000-42E6-8BE1-F355DE80871B).
+02:36:47 /dev/vda1: Created a new partition 1 of type 'BIOS boot' and of size 1 MiB.
+02:36:47 /dev/vda2: Created a new partition 2 of type 'EFI System' and of size 512 MiB.
+02:36:47 /dev/vda3: Created a new partition 3 of type 'Linux filesystem' and of size 510 MiB.
+02:36:47 /dev/vda4: Created a new partition 4 of type 'Linux root (x86-64)' and of size 63 GiB.
+02:36:47 /dev/vda5: Done.
+02:36:47 New situation:
+02:36:47 Disklabel type: gpt
+02:36:47 Disk identifier: 894E00EE-4000-42E6-8BE1-F355DE80871B
+02:36:47 Device       Start       End   Sectors  Size Type
+02:36:47 /dev/vda1     2048      4095      2048    1M BIOS boot
+02:36:47 /dev/vda2     4096   1052671   1048576  512M EFI System
+02:36:47 /dev/vda3  1052672   2097151   1044480  510M Linux filesystem
+02:36:47 /dev/vda4  2097152 134215679 132118528   63G Linux root (x86-64)
+02:36:47 The partition table has been altered.
+02:36:47 Calling ioctl() to re-read partition table.
+02:36:47 Syncing disks.
+02:36:48 Initializing LUKS for root
+02:36:56 Enrolling root device with TPM
+02:36:56 > systemd-cryptenroll --wipe-slot=all --tpm2-device=auto --unlock-key-file /tmp/.tmpVeLPpT /dev/vda4
+02:36:58 New TPM2 token enrolled as key slot 1.
+02:36:58 Wiped slot 0.
+02:36:58 Opening root LUKS device
+02:36:59 Creating boot filesystem (xfs) on device /dev/vda3 (size=534.8 MB)
+02:36:59 > mkfs.xfs -f -m uuid=4d7724a4-a3bb-477b-b354-dd6c0b72b6c4 -L boot /dev/vda3
+02:36:59 Creating root filesystem (xfs) on device /dev/mapper/root (size=67.6 GB)
+02:36:59 > mkfs.xfs -f -m uuid=a8402839-87ed-4fc3-859c-64a37bd2d5ff -L root /dev/mapper/root
+02:36:59 Creating ESP filesystem
+02:36:59 > mkfs.fat /dev/vda2 -n EFI-SYSTEM
+02:36:59 Initializing ostree layout
+02:36:59 layers already present: 0; layers needed: 266 (7.5 GB)
+02:39:21 Deploying container image...done (28 seconds)
+02:39:22 Bootloader: grub
+02:39:22 Installing bootloader via bootupd
+02:39:22 Executing: "efibootmgr" "--create" "--disk" "/dev/vda" "--part" "2" "--loader" "\\EFI\\fedora\\shimx64.efi" "--label" "Fedora"
+02:39:22 BootCurrent: 0002
+02:39:22 Timeout: 0 seconds
+02:39:22 BootOrder: 0004,0002,0003,0000,0001
+02:39:22 Boot0000* BootManagerMenuApp	FvVol(7cb8bdc9-f8eb-4f34-aaea-3ee4af6516a1)/FvFile(eec25bdc-67f2-4d95-b1d5-f81b2039d11d)
+02:39:22 Boot0001* EFI Firmware Setup	FvVol(7cb8bdc9-f8eb-4f34-aaea-3ee4af6516a1)/FvFile(462caa21-7614-4503-836e-8ab6f4662331)
+02:39:22 Boot0002* UEFI QEMU DVD-ROM QM00011 	PciRoot(0x0)/Pci(0x1f,0x2)/Sata(5,65535,0){auto_created_boot_option}
+02:39:22 Boot0003* UEFI Misc Device	PciRoot(0x0)/Pci(0x3,0x0){auto_created_boot_option}
+02:39:22 Boot0004* Fedora	HD(2,GPT,ac4248bb-6360-4569-979d-7e14456ddd90,0x1000,0x100000)/\EFI\fedora\shimx64.efi
+02:39:22 Added 01_users.cfg
+02:39:22 Added 10_blscfg.cfg
+02:39:22 Added 14_menu_show_once.cfg
+02:39:22 Added 30_uefi-firmware.cfg
+02:39:22 Added 41_custom.cfg
+02:39:22 Installed: grub.cfg
+02:39:22 Installed: bootuuid.cfg
+02:39:22 Installed: "EFI/fedora/grub.cfg"
+02:39:22 Installed: "EFI/fedora/bootuuid.cfg"
+02:39:24 Trimming root
+02:39:24 Finalizing filesystem root
+02:39:24 Trimming boot
+02:39:24 boot: 510 MiB (534773760 bytes) trimmed
+02:39:24 Finalizing filesystem boot
+02:39:25 Unmounting filesystems
+02:39:25 Closing root LUKS device
+02:39:25 Device root is still in use.
+02:39:25 error: Installing to disk: Task Closing root LUKS device failed: ExitStatus(unix_wait_status(1280))
+02:39:25 exit 1
+02:39:25 bootc left /run/bootc/storage mounted after a complete install. Unmounting it and closing the root by hand.
+02:39:25 $ umount /run/bootc/storage
+02:39:25 exit 0
+02:39:25 $ cryptsetup close root
+02:39:25 exit 0
+02:39:25 $ udevadm settle
+02:39:25 exit 0
+02:39:25 $ lsblk --json --tree --output NAME,PATH,TYPE,FSTYPE /dev/vda
+02:39:25 {
+02:39:25    "blockdevices": [
+02:39:25       {
+02:39:25          "name": "vda",
+02:39:25          "path": "/dev/vda",
+02:39:25          "type": "disk",
+02:39:25          "fstype": null,
+02:39:25          "children": [
+02:39:25             {
+02:39:25                "name": "vda1",
+02:39:25                "path": "/dev/vda1",
+02:39:25                "type": "part",
+02:39:25                "fstype": null
+02:39:25             },{
+02:39:25                "name": "vda2",
+02:39:25                "path": "/dev/vda2",
+02:39:25                "type": "part",
+02:39:25                "fstype": "vfat"
+02:39:25             },{
+02:39:25                "name": "vda3",
+02:39:25                "path": "/dev/vda3",
+02:39:25                "type": "part",
+02:39:25                "fstype": "xfs"
+02:39:25             },{
+02:39:25                "name": "vda4",
+02:39:25                "path": "/dev/vda4",
+02:39:25                "type": "part",
+02:39:25                "fstype": "crypto_LUKS"
+02:39:25             }
+02:39:25          ]
+02:39:25       }
+02:39:25    ]
+02:39:25 }
+02:39:25 exit 0
+02:39:25 $ systemd-cryptenroll --unlock-tpm2-device=auto --recovery-key /dev/vda4
+02:39:25 (output withheld: it holds a secret)
+02:39:25 exit 0
+02:39:25 $ cryptsetup open --token-only /dev/vda4 mauvely-target
+02:39:26 exit 0
+02:39:26 $ mount /dev/mapper/mauvely-target /run/mauvely-installer/target
+02:39:26 exit 0
+02:39:26 Deployment: /run/mauvely-installer/target/ostree/deploy/default/deploy/a9f7ceff95e63d3d46be6eeb7ec869adf7a49c19fb4da0e9ec9f17b5f4c5d6b3.0
+02:39:26 Wrote etc/mauvely/server and etc/mauvely/enrol.
+02:39:26 $ setfiles -F -r /run/mauvely-installer/target/ostree/deploy/default/deploy/a9f7ceff95e63d3d46be6eeb7ec869adf7a49c19fb4da0e9ec9f17b5f4c5d6b3.0 /run/mauvely-installer/target/ostree/deploy/default/deploy/a9f7ceff95e63d3d46be6eeb7ec869adf7a49c19fb4da0e9ec9f17b5f4c5d6b3.0/etc/selinux/targeted/contexts/files/file_contexts /run/mauvely-installer/target/ostree/deploy/default/deploy/a9f7ceff95e63d3d46be6eeb7ec869adf7a49c19fb4da0e9ec9f17b5f4c5d6b3.0/etc/mauvely
+02:39:26 exit 0
+02:39:26 $ ls -lZ /run/mauvely-installer/target/ostree/deploy/default/deploy/a9f7ceff95e63d3d46be6eeb7ec869adf7a49c19fb4da0e9ec9f17b5f4c5d6b3.0/etc/mauvely
+02:39:26 total 8
+02:39:26 -rw-------. 1 root root system_u:object_r:etc_t:s0 48 Oct 14 02:39 enrol
+02:39:26 -rw-r--r--. 1 root root system_u:object_r:etc_t:s0 21 Oct 14 02:39 server
+02:39:26 exit 0
+02:39:26 $ umount /run/mauvely-installer/target
+02:39:26 exit 0
+02:39:26 $ cryptsetup close mauvely-target
+02:39:26 exit 0
+02:39:26 Installed.

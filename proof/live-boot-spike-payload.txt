@@ -1,0 +1,7 @@
+[    0.000000] Command line: BOOT_IMAGE=/images/pxeboot/vmlinuz root=live:CDLABEL=Mauvely-OS-Installer rd.live.image rd.live.overlay.overlayfs=1 console=tty0 console=ttyS0,115200 selinux=0 mauvely.server=http://10.0.2.2:8798
+[    0.000000] secureboot: Secure boot enabled
+[    0.000000] Kernel is locked down from EFI Secure Boot mode; see man kernel_lockdown.7
+[    0.003632] secureboot: Secure boot enabled
+[  OK  ] Started mauvely-installer.service - Mauvely OS installer.
+[  OK  ] Stopped mauvely-installer.service - Mauvely OS installer.
+[  346.371576] audit: type=1131 audit(1791944837.853:921): pid=1 uid=0 auid=4294967295 ses=4294967295 msg='unit=mauvely-installer comm="systemd" exe="/usr/lib/systemd/systemd" hostname=? addr=? terminal=? res=success'

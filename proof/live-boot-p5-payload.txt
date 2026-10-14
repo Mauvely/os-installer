@@ -1,0 +1,6 @@
+[    0.000000] Command line: BOOT_IMAGE=/images/pxeboot/vmlinuz root=live:CDLABEL=Mauvely-OS-Installer rd.live.image rd.live.overlay.overlayfs=1 console=tty0 console=ttyS0,115200 selinux=0 mauvely.server=http://10.0.2.2:8798
+[    0.000000] secureboot: Secure boot enabled
+[    0.003462] secureboot: Secure boot enabled
+[  OK  ] Started mauvely-installer.service - Mauvely OS installer.
+         Stopping mauvely-installer.service - Mauvely OS installer...
+[  OK  ] Stopped mauvely-installer.service - Mauvely OS installer.

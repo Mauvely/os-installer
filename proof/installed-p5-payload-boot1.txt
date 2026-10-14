@@ -1,0 +1,124 @@
+
+== Secure Boot
+SecureBoot enabled
+SecureBoot efivar: 1 (enabled)
+secureboot: Secure boot enabled
+secureboot: Secure boot enabled
+
+== Unlock
+LUKS partition: /dev/vda4
+Starting systemd-cryptsetup@luks\x2d5f76368f\x2d660e\x2d467f\x2da2dd\x2dcdd03c8b05ff.service - Cryptography Setup for luks-5f76368f-660e-467f-a2dd-cdd03c8b05ff...
+Finished systemd-cryptsetup@luks\x2d5f76368f\x2d660e\x2d467f\x2da2dd\x2dcdd03c8b05ff.service - Cryptography Setup for luks-5f76368f-660e-467f-a2dd-cdd03c8b05ff.
+password prompts this boot: 0
+/dev/mapper/luks-5f76368f-660e-467f-a2dd-cdd03c8b05ff xfs
+
+== LUKS slots and tokens
+Keyslots:
+  0: luks2
+	Key:        512 bits
+	Priority:   normal
+	Cipher:     aes-xts-plain64
+	Cipher key: 512 bits
+	PBKDF:      pbkdf2
+	Hash:       sha512
+	Iterations: 1000
+	Salt:       12 05 a7 d5 c2 38 25 b4 94 8a fb 96 c5 de 79 5c 
+	            1c 98 be 71 02 cc 27 b0 04 e2 0f 58 28 11 22 f2 
+	AF stripes: 4000
+	AF hash:    sha512
+	Area offset:32768 [bytes]
+	Area length:258048 [bytes]
+	Digest ID:  0
+  2: luks2
+	Key:        512 bits
+	Priority:   normal
+	Cipher:     aes-xts-plain64
+	Cipher key: 512 bits
+	PBKDF:      pbkdf2
+	Hash:       sha512
+	Iterations: 1000
+	Salt:       92 49 d1 89 75 1b d1 b0 57 2d 9a 5f 98 6c f0 91 
+	            c7 8e e0 a6 80 92 8a 53 ed 99 b8 c2 bb 35 d7 23 
+	AF stripes: 4000
+	AF hash:    sha512
+	Area offset:548864 [bytes]
+	Area length:258048 [bytes]
+	Digest ID:  0
+Tokens:
+  1: systemd-recovery
+	Keyslot:    0
+  2: systemd-tpm2
+	tpm2-hash-pcrs:   7
+	tpm2-pcr-bank:    sha256
+	tpm2-pubkey:
+	            (null)
+	tpm2-pubkey-pcrs: 
+	tpm2-primary-alg: ecc
+	tpm2-pin:         false
+	tpm2-pcrlock:     false
+	tpm2-salt:        false
+	tpm2-srk:         true
+	tpm2-pcrlock-nv:  false
+	tpm2-policy-hash:
+	            63 48 d6 ff 4a 6f 3e 4f 8c e9 38 d7 b8 95 be 36
+	            b4 29 53 94 52 43 c9 4c 8f 3b fe 34 6b 6e f8 73
+	tpm2-blob:  00 9e 00 20 3f 01 51 b6 5c a0 3a 11 3a 08 4a 1e
+	            0b c0 74 54 55 8f 60 7d f9 fb 6f a2 1a 92 7c ba
+	            a6 73 87 e4 00 10 22 e2 34 d2 be 34 b3 15 1e 45
+	            86 3e 9c 0a c4 de 19 95 48 76 2e 6d 52 2c 0f 7d
+	            3c 2f a3 5a 99 15 4d 47 8a 75 43 f1 2d fe 15 83
+	            44 c9 ed e4 8f 2e 54 03 27 37 16 9c b5 04 27 59
+	            13 29 96 a0 c3 14 5a 89 de 34 8d b9 62 67 2a 3b
+	            29 20 61 6a a9 d6 99 71 5b ed f2 5a c4 df 7b b9
+	            45 b9 fd 61 18 8d 9b f4 47 66 5b 08 05 71 92 e8
+	            d9 fd 17 61 9c 77 50 fa 48 fb 95 9b d6 2b 7e c4
+	            00 4e 00 08 00 0b 00 00 04 12 00 20 63 48 d6 ff
+	            4a 6f 3e 4f 8c e9 38 d7 b8 95 be 36 b4 29 53 94
+	            52 43 c9 4c 8f 3b fe 34 6b 6e f8 73 00 10 00 20
+	            ad 36 b4 5b b5 1f db 7b 05 d0 a1 8c 01 64 1e 40
+	            3a 4b 6d 5e b4 7c 3b e6 df 8a f2 7d 17 53 1c 86
+	Keyslot:    2
+Digests:
+keyslots: 2
+systemd-tpm2 tokens: 1
+systemd-recovery tokens: 1
+TPM2 token PCRs: [7]
+recovery key from the screen opens keyslot 0: yes
+a wrong key opens keyslot 0: no
+
+== Enrolment files
+Enforcing
+drwxr-xr-x. 2 root root system_u:object_r:etc_t:s0 33 Oct 14 02:39 /etc/mauvely
+total 8
+-rw-------. 1 root root system_u:object_r:etc_t:s0 48 Oct 14 02:39 enrol
+-rw-r--r--. 1 root root system_u:object_r:etc_t:s0 21 Oct 14 02:39 server
+/etc/mauvely/server  mode 644  owner root:root  label system_u:object_r:etc_t:s0
+/etc/mauvely/enrol  mode 600  owner root:root  label system_u:object_r:etc_t:s0
+server: http://10.0.2.2:8798
+enrol: 47 characters, prefix mvd_, well-formed
+policy expects: /etc/mauvely/server	system_u:object_r:etc_t:s0 /etc/mauvely/enrol	system_u:object_r:etc_t:s0 
+restorecon -nv (empty means every label is already right):
+(end of restorecon)
+
+== First boot
+active active inactive
+/etc/plasma-setup-done absent
+NAME="Mauvely OS"
+VERSION="44.20261013.0 (Mauvely OS)"
+mauvely-seal.service: active success
+New TPM2 token enrolled as key slot 2.
+Wiped slot 1.
+mauvely-seal: dropping headless=true from luks.options (takes effect at the next boot)
+Staging deployment...done
+Changes queued for next boot. Run "systemctl reboot" to start a reboot
+Finished mauvely-seal.service - Mauvely OS disk seal (TPM2 on PCR 7, recovery prompt).
+headless=true in this boot's kargs: yes
+headless=true in the next boot's kargs: no
+State: idle
+Deployments:
+  ostree-unverified-registry:registry.invalid/mauvely/os:stable
+                   Digest: sha256:f99196cac131cf0a72f210115c3b7248c4288258ee69f5cc09032515096737a7
+                  Version: 44.20261013.0 (2026-10-14T02:20:27Z)
+
+* ostree-unverified-registry:registry.invalid/mauvely/os:stable
+                   Digest: sha256:f99196cac131cf0a72f210115c3b7248c4288258ee69f5cc09032515096737a7
