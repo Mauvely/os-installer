@@ -1,0 +1,15 @@
+# TEST ONLY. Never shipped, never pushed.
+#
+# The installer image with two things the VM test needs and production must
+# not have: the local stack's server on the kernel command line, so the test
+# proves `mauvely.server=` reaches the server field, and root SSH with the P6
+# test key, so the live system's log can be read while the screen is driven
+# over QMP. scripts/build-images.sh builds it as localhost/mauvely-installer:p6-test.
+ARG BASE=localhost/mauvely-installer:p6
+FROM ${BASE}
+COPY authorized_keys /usr/share/mauvely-p6-test/authorized_keys
+RUN printf 'AuthorizedKeysFile .ssh/authorized_keys /usr/share/mauvely-p6-test/authorized_keys\n' \
+      > /etc/ssh/sshd_config.d/90-p6-test.conf \
+ && systemctl enable sshd.service \
+ && sed -i 's| selinux=0"$| selinux=0 mauvely.server=http://10.0.2.2:8798"|' /usr/lib/image-builder/bootc/iso.yaml \
+ && grep -q 'mauvely.server=http://10.0.2.2:8798"$' /usr/lib/image-builder/bootc/iso.yaml

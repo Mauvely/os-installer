@@ -1,0 +1,13 @@
+# Read by image-builder's bootc-generic-iso from the installer image, at
+# /usr/lib/image-builder/bootc/iso.yaml. The label is how dracut finds the live
+# medium, and how the app keeps it out of the disk list (src/core/config.h).
+#
+# `mauvely.server=<url>` on this line would change the server the app offers.
+# Production leaves it off and the app's default, https://devices.mauvely.com,
+# applies; scripts/test-installer/ adds the local stack's for the VM tests.
+label: "Mauvely-OS-Installer"
+grub2:
+  entries:
+    - name: "Install Mauvely OS"
+      linux: "/images/pxeboot/vmlinuz root=live:CDLABEL=Mauvely-OS-Installer rd.live.image rd.live.overlay.overlayfs=1 console=tty0 console=ttyS0,115200 selinux=0"
+      initrd: "/images/pxeboot/initrd.img"

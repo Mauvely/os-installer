@@ -1,0 +1,32 @@
+# The installer, full screen on tty1: seatd for the seat, cage as the kiosk
+# compositor, the app as its only client. As root, because the app partitions,
+# encrypts and mounts disks.
+[Unit]
+Description=Mauvely OS installer
+After=systemd-user-sessions.service systemd-udev-settle.service plymouth-quit-wait.service
+Wants=systemd-udev-settle.service
+Conflicts=getty@tty1.service
+After=getty@tty1.service
+ConditionPathExists=/dev/tty0
+
+[Service]
+Type=simple
+# The pixman renderer needs no Mesa drivers and runs on any framebuffer: the
+# installer draws seven still pages, not a desktop.
+Environment=WLR_RENDERER=pixman
+Environment=QT_QPA_PLATFORM=wayland
+Environment=XDG_RUNTIME_DIR=/run/mauvely-kiosk
+RuntimeDirectory=mauvely-kiosk
+RuntimeDirectoryMode=0700
+ExecStart=/usr/bin/seatd-launch -- /usr/bin/cage -d -s -- /usr/bin/mauvely-installer
+TTYPath=/dev/tty1
+TTYReset=yes
+TTYVHangup=yes
+StandardInput=tty-fail
+StandardOutput=journal
+StandardError=journal
+Restart=on-failure
+RestartSec=2
+
+[Install]
+WantedBy=multi-user.target
