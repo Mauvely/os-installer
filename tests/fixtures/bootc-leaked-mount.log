@@ -1,0 +1,12 @@
+Installing image: docker://registry.invalid/mauvely/os:stable
+> systemd-cryptenroll --wipe-slot=all --tpm2-device=auto --unlock-key-file /tmp/.tmpGFVM5h /dev/vda4
+Installed: "EFI/fedora/grub.cfg"
+Installed: "EFI/fedora/bootuuid.cfg"
+Trimming root
+Finalizing filesystem root
+Trimming boot
+boot: 510 MiB (534773760 bytes) trimmed
+Finalizing filesystem boot
+Unmounting filesystems
+Closing root LUKS device
+error: Installing to disk: Task Closing root LUKS device failed: ExitStatus(unix_wait_status(1280))

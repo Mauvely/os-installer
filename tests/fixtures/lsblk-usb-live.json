@@ -1,0 +1,11 @@
+{
+   "blockdevices": [
+      {"name":"sda", "path":"/dev/sda", "type":"disk", "size":"15502147584", "model":"Ultra Fit       ", "serial":"4C530001", "tran":"usb", "rm":"1", "ro":"0", "mountpoint":null, "label":"Mauvely-OS-Installer",
+         "children": [
+            {"name":"sda1", "path":"/dev/sda1", "type":"part", "size":"2876637184", "model":null, "serial":null, "tran":"usb", "rm":"1", "ro":"0", "mountpoint":"/run/initramfs/live", "label":"Mauvely-OS-Installer"},
+            {"name":"sda2", "path":"/dev/sda2", "type":"part", "size":"10485760", "model":null, "serial":null, "tran":"usb", "rm":"1", "ro":"0", "mountpoint":null, "label":"ANACONDA"}
+         ]
+      },
+      {"name":"sdb", "path":"/dev/sdb", "type":"disk", "size":"1000204886016", "model":"CT1000MX500SSD1", "serial":"2117E59AAAAA", "tran":"sata", "rm":"0", "ro":"0", "mountpoint":null, "label":null}
+   ]
+}

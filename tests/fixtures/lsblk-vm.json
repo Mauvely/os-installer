@@ -1,0 +1,190 @@
+{
+   "blockdevices": [
+      {
+         "name": "loop0",
+         "path": "/dev/loop0",
+         "type": "loop",
+         "size": 4223660032,
+         "model": null,
+         "serial": null,
+         "tran": null,
+         "rm": false,
+         "ro": true,
+         "mountpoints": [
+             null
+         ],
+         "label": null,
+         "children": [
+            {
+               "name": "live-rw",
+               "path": "/dev/mapper/live-rw",
+               "type": "dm",
+               "size": 4223660032,
+               "model": null,
+               "serial": null,
+               "tran": null,
+               "rm": false,
+               "ro": false,
+               "mountpoints": [
+                   "/"
+               ],
+               "label": null
+            }
+         ]
+      },
+      {
+         "name": "sr0",
+         "path": "/dev/sr0",
+         "type": "rom",
+         "size": 2876637184,
+         "model": "QEMU DVD-ROM",
+         "serial": "QM00005",
+         "tran": "sata",
+         "rm": true,
+         "ro": false,
+         "mountpoints": [
+             "/run/initramfs/live"
+         ],
+         "label": "Mauvely-OS-Installer"
+      },
+      {
+         "name": "zram0",
+         "path": "/dev/zram0",
+         "type": "disk",
+         "size": 8589934592,
+         "model": null,
+         "serial": null,
+         "tran": null,
+         "rm": false,
+         "ro": false,
+         "mountpoints": [
+             "[SWAP]"
+         ],
+         "label": "zram0"
+      },
+      {
+         "name": "vda",
+         "path": "/dev/vda",
+         "type": "disk",
+         "size": 68719476736,
+         "model": null,
+         "serial": "TARGET",
+         "tran": null,
+         "rm": false,
+         "ro": false,
+         "mountpoints": [
+             null
+         ],
+         "label": null
+      },
+      {
+         "name": "nvme0n1",
+         "path": "/dev/nvme0n1",
+         "type": "disk",
+         "size": 512110190592,
+         "model": "Samsung SSD 980 PRO 500GB",
+         "serial": "S5GXNX0R123456",
+         "tran": "nvme",
+         "rm": false,
+         "ro": false,
+         "mountpoints": [
+             null
+         ],
+         "label": null,
+         "children": [
+            {
+               "name": "nvme0n1p1",
+               "path": "/dev/nvme0n1p1",
+               "type": "part",
+               "size": 629145600,
+               "model": null,
+               "serial": null,
+               "tran": "nvme",
+               "rm": false,
+               "ro": false,
+               "mountpoints": [
+                   null
+               ],
+               "label": "SYSTEM"
+            },
+            {
+               "name": "nvme0n1p2",
+               "path": "/dev/nvme0n1p2",
+               "type": "part",
+               "size": 511479939072,
+               "model": null,
+               "serial": null,
+               "tran": "nvme",
+               "rm": false,
+               "ro": false,
+               "mountpoints": [
+                   null
+               ],
+               "label": null
+            }
+         ]
+      },
+      {
+         "name": "sdb",
+         "path": "/dev/sdb",
+         "type": "disk",
+         "size": 31914983424,
+         "model": "SanDisk 3.2Gen1",
+         "serial": "0401a1b2c3d4",
+         "tran": "usb",
+         "rm": true,
+         "ro": false,
+         "mountpoints": [
+             null
+         ],
+         "label": null,
+         "children": [
+            {
+               "name": "sdb1",
+               "path": "/dev/sdb1",
+               "type": "part",
+               "size": 31913934848,
+               "model": null,
+               "serial": null,
+               "tran": "usb",
+               "rm": true,
+               "ro": false,
+               "mountpoints": [
+                   "/run/media/liveuser/STICK"
+               ],
+               "label": "STICK"
+            }
+         ]
+      },
+      {
+         "name": "sdc",
+         "path": "/dev/sdc",
+         "type": "disk",
+         "size": 0,
+         "model": "Multi-Card",
+         "serial": "20120501030900000",
+         "tran": "usb",
+         "rm": true,
+         "ro": false,
+         "mountpoints": [
+             null
+         ],
+         "label": null
+      },
+      {
+         "name": "sdd",
+         "path": "/dev/sdd",
+         "type": "disk",
+         "size": 4000787030016,
+         "model": "WDC WD40EFRX-68N32N0",
+         "serial": "WD-WCC7K0123456",
+         "tran": "sata",
+         "rm": false,
+         "ro": true,
+         "mountpoints": [
+             null
+         ],
+         "label": null
+      }
+   ]
+}

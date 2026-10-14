@@ -1,0 +1,10 @@
+<!DOCTYPE RCC>
+<RCC version="1.0">
+    <!-- The live system has no fonts of its own, so the faces travel inside the binary. -->
+    <qresource prefix="/fonts">
+        <file alias="Baloo2-ExtraBold.ttf">fonts/Baloo2-ExtraBold.ttf</file>
+        <file alias="Baloo2-Regular.ttf">fonts/Baloo2-Regular.ttf</file>
+        <file alias="Inter-Variable.ttf">fonts/Inter-Variable.ttf</file>
+        <file alias="JetBrainsMono-Regular.ttf">fonts/JetBrainsMono-Regular.ttf</file>
+    </qresource>
+</RCC>

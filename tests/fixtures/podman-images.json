@@ -1,0 +1,27 @@
+[
+    {
+        "Id": "1e6c0d3d0b6f8f9d0a8c34d7a0d0b6e4c9d2a1f3e5b7c9d1f3a5b7c9d1e3f5a7",
+        "ParentId": "",
+        "RepoTags": null,
+        "RepoDigests": [
+            "localhost/mauvely-os@sha256:6f0d3d9a1b2c3d4e5f60718293a4b5c6d7e8f90a1b2c3d4e5f60718293a4b5c6"
+        ],
+        "Size": 6094831616,
+        "SharedSize": 0,
+        "VirtualSize": 6094831616,
+        "Labels": {
+            "containers.bootc": "1",
+            "ostree.bootable": "1"
+        },
+        "Containers": 0,
+        "Names": [
+            "localhost/mauvely-os:p6-test"
+        ],
+        "Digest": "sha256:6f0d3d9a1b2c3d4e5f60718293a4b5c6d7e8f90a1b2c3d4e5f60718293a4b5c6",
+        "History": [
+            "localhost/mauvely-os:p6-test"
+        ],
+        "Created": 1792000000,
+        "CreatedAt": "2026-10-14T00:00:00Z"
+    }
+]

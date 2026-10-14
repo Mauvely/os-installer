@@ -1,0 +1,16 @@
+{
+   "blockdevices": [
+      {
+         "name": "vda",
+         "path": "/dev/vda",
+         "type": "disk",
+         "fstype": null,
+         "children": [
+            {"name": "vda1", "path": "/dev/vda1", "type": "part", "fstype": null},
+            {"name": "vda2", "path": "/dev/vda2", "type": "part", "fstype": "vfat"},
+            {"name": "vda3", "path": "/dev/vda3", "type": "part", "fstype": "xfs"},
+            {"name": "vda4", "path": "/dev/vda4", "type": "part", "fstype": "crypto_LUKS"}
+         ]
+      }
+   ]
+}

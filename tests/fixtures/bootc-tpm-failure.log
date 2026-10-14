@@ -1,0 +1,4 @@
+Installing image: docker://registry.invalid/mauvely/os:stable
+> systemd-cryptenroll --wipe-slot=all --tpm2-device=auto --unlock-key-file /tmp/.tmpQ2xY1z /dev/vda4
+No TPM2 device found.
+error: Installing to disk: Creating rootfs: Task systemd-cryptenroll failed: ExitStatus(unix_wait_status(256))

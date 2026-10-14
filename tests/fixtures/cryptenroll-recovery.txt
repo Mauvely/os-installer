@@ -1,0 +1,9 @@
+A secret recovery key has been generated for this volume:
+
+    🔐 fvhkcbjd-lnrtigku-bhefjrtv-vncbtgeh-ddilrkvu-ifnhbutr-ecdjgrtn-likdheuf
+
+Please save this secret recovery key at a secure location. It may be used to
+regain access to the volume if the other configured access credentials have
+been lost or forgotten. The recovery key may be entered in place of a password
+whenever authentication is requested.
+New recovery key enrolled as key slot 1.
