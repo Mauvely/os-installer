@@ -88,7 +88,7 @@ private slots:
             "lsblk " + disks::lsblkArgs().join(' '),
             "podman images --format json",
             "bootc install to-disk --source-imgref containers-storage:localhost/mauvely-os:p6-test --wipe "
-            "--block-setup tpm2-luks --filesystem xfs --target-imgref registry.invalid/mauvely/os:stable "
+            "--block-setup tpm2-luks --filesystem xfs --target-imgref ghcr.io/mauvely/os:stable "
             "--skip-fetch-check /dev/vda",
             "umount /run/bootc/storage",
             "cryptsetup close root",

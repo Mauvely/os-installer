@@ -171,7 +171,7 @@ private slots:
         QSemaphore started, release;
         m_fake.before = [&](const QString &program, const Runner::LineFn &onLine) {
             if (program != QLatin1String("bootc")) return;
-            if (onLine) onLine(QStringLiteral("Installing image: docker://registry.invalid/mauvely/os:stable"));
+            if (onLine) onLine(QStringLiteral("Installing image: docker://ghcr.io/mauvely/os:stable"));
             started.release();
             release.acquire();
         };

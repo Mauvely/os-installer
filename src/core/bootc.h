@@ -22,12 +22,13 @@ namespace bootc {
 
 /**
  * The update reference written into the installed system, which is where
- * `bootc upgrade` looks next. **Undecided: T4 in brief 19** (the image
- * registry). `--skip-fetch-check` lets it name an image that exists nowhere
- * yet; the agent moves the machine to its collection's ring at the first
- * check-in. Change it here and nowhere else.
+ * `bootc upgrade` looks next: Mauvely's signed images (T4 in brief 19). The
+ * installed image's policy refuses anything under that name that Mauvely did
+ * not sign. `--skip-fetch-check` keeps the install offline, and the agent moves
+ * the machine to its collection's ring at the first check-in. Change it here
+ * and nowhere else.
  */
-inline QString targetImgref() { return QStringLiteral("registry.invalid/mauvely/os:stable"); }
+inline QString targetImgref() { return QStringLiteral("ghcr.io/mauvely/os:stable"); }
 
 /** `install to-disk …` for `bootc`, wiping `disk`. */
 QStringList installArgs(const QString &payloadRef, const QString &disk);

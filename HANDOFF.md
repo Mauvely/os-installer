@@ -4,6 +4,10 @@
 in a VM. `CLAUDE.md` describes the shape of the repo, how the install works and
 how to run the VM test. This file covers what that does not.
 
+**Since T4 (2026-10-14) the target reference is `ghcr.io/mauvely/os:stable`.**
+Every ISO built before that, the proof runs' included, writes the
+`registry.invalid/…` placeholder.
+
 ## The runs
 
 Every run booted the ISO under OVMF Secure Boot with swtpm, with a blank 64 GB
@@ -106,9 +110,6 @@ directory is moved back to `vm/`. Its recovery key is the one in
   itself needs no network, but the enrolment at first boot does.
 - **Recovery-key escrow (M3).** Today the key exists only on the screen and on
   the user's paper.
-- **T4's target reference.** `bootc::targetImgref()` in `src/core/bootc.h`
-  holds the `registry.invalid/mauvely/os:stable` placeholder, and is the only
-  place that names it.
 - **Keyboard layout.** cage starts with the default (US) layout, which matters
   for typing a token on QWERTZ or AZERTY.
 - **Exporting the log.** `/var/log/mauvely-installer.log` lives in the live

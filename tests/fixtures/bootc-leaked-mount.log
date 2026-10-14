@@ -1,4 +1,4 @@
-Installing image: docker://registry.invalid/mauvely/os:stable
+Installing image: docker://ghcr.io/mauvely/os:stable
 > systemd-cryptenroll --wipe-slot=all --tpm2-device=auto --unlock-key-file /tmp/.tmpGFVM5h /dev/vda4
 Installed: "EFI/fedora/grub.cfg"
 Installed: "EFI/fedora/bootuuid.cfg"

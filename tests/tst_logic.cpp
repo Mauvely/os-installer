@@ -256,7 +256,7 @@ private slots:
         QCOMPARE(bootc::installArgs("localhost/mauvely-os:p6-test", "/dev/vda").join(' '),
                  QStringLiteral("install to-disk --source-imgref containers-storage:localhost/mauvely-os:p6-test "
                                 "--wipe --block-setup tpm2-luks --filesystem xfs "
-                                "--target-imgref registry.invalid/mauvely/os:stable --skip-fetch-check /dev/vda"));
+                                "--target-imgref ghcr.io/mauvely/os:stable --skip-fetch-check /dev/vda"));
     }
 
     void classify_data() {

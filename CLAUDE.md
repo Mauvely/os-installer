@@ -20,7 +20,7 @@ superproject. This repo is its phase P6.
 | `src/core/runner.h` | The process seam. Every command goes through `Runner::run()`; the tests use `tests/fakerunner.h` |
 | `src/core/installer.cpp` | The sequence: re-check the disk, find the payload, bootc, the recovery key, the two files, unmount and close. Every command and its exit status is logged to `/var/log/mauvely-installer.log` |
 | `src/core/disks.cpp` | What may be offered for wiping, from `lsblk --json`: whole disks only, never the live medium, never anything mounted |
-| `src/core/bootc.h` | The install arguments, the target reference (`registry.invalid/…`, T4) and the failure classification |
+| `src/core/bootc.h` | The install arguments, the target reference (`ghcr.io/mauvely/os:stable`, T4) and the failure classification |
 | `src/core/luks.cpp` | Finding the new LUKS partition, and reading the recovery key out of `systemd-cryptenroll` |
 | `src/core/target.cpp` | Writing `/etc/mauvely/{server,enrol}` into the deployment's `etc` |
 | `src/core/enrolment.cpp`, `cmdline.cpp` | The server and the token format. The `mauvely.server=` and `rd.live.image` kernel arguments |
