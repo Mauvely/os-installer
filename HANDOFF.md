@@ -20,6 +20,20 @@ alone.
 | 1 | `localhost/mauvely-installer:p6-test` | `localhost/mauvely-os:p6-test`: P1's `:spike` plus the test sshd layer | `proof/vm-*`, `live-boot-spike-payload.txt`, `installed-spike-payload.txt` |
 | 2 | the same | `localhost/mauvely-os:p6-p5-test`: P5's `:p5` plus the same layer | `proof/p5-*`, `live-boot-p5-payload.txt`, `live-install-p5-payload.log`, `installed-p5-payload-boot{1,2}.txt` |
 | 3 | `localhost/mauvely-installer:p6`, the production image with no test layer | as run 2, but not installed | `proof/live-*.png`, `live-boot-production.txt` |
+| 4 | `localhost/mauvely-installer:t4`: HEAD `7218b1b`, production, no test layer | `ghcr.io/mauvely/os:stable`, `sha256:46945ca1…`, as published | `proof/stable-*.png` |
+
+**Run 4 is the first full install of what a customer would get** (2026-10-14):
+the production installer with the published, signed `stable` image as its
+payload. Server `https://devices.mauvely.dev` and a fake well-formed token,
+so nothing was enrolled. It copied 266 layers (7.5 GB) to `vda` in about
+four minutes, showed the recovery key, and the installed disk then booted
+alone twice to Plasma Setup with no unlock prompt, the second time after the
+seal's first boot. Neither system has SSH, so the LUKS slots, the files and
+the agent were not inspected; runs 2 and P7 cover those. The ISO is
+`~/.cache/mauvely-os/p6/iso/mauvely-os-stable.iso`, built by
+`build-iso.sh localhost/mauvely-installer:t4` with
+`PAYLOAD_REF=ghcr.io/mauvely/os:stable`. It is the one to hand anybody who
+wants to try the OS in a VM: Secure Boot OVMF and a TPM are required.
 
 **Run 3 was a boot check of the production live system.** The kiosk started
 under Secure Boot. Server showed `https://devices.mauvely.com`, because there
