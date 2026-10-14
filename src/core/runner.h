@@ -5,8 +5,8 @@
 //
 //  Every program the installer starts (lsblk, bootc, cryptsetup, mount, …)
 //  goes through `Runner::run()`. The live binary uses `ProcessRunner`; the
-//  tests and the demo use a scripted fake, so the whole install sequence runs
-//  without root and without a disk.
+//  tests use a scripted fake (tests/fakerunner.h), so the whole install
+//  sequence runs without root and without a disk.
 //
 //  `run()` blocks. The install sequence calls it from its own thread, and the
 //  UI thread only for the quick ones (lsblk, findmnt, systemctl reboot).

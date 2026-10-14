@@ -1,0 +1,12 @@
+== The production installer image (localhost/mauvely-installer:p6, no test layer) as the live system
+== ISO: mauvely-installer-p6-live.iso; payload localhost/mauvely-os:p6-p5-test (not installed in this run)
+
+== Serial console
+[    0.000000] Command line: BOOT_IMAGE=/images/pxeboot/vmlinuz root=live:CDLABEL=Mauvely-OS-Installer rd.live.image rd.live.overlay.overlayfs=1 console=tty0 console=ttyS0,115200 selinux=0
+[    0.000000] secureboot: Secure boot enabled
+[    0.003545] secureboot: Secure boot enabled
+[  OK  ] Started mauvely-installer.service - Mauvely OS installer.
+
+== SSH to the live system (qemu forwards 127.0.0.1:2241 to the guest's port 22)
+kex_exchange_identification: read: Connection reset by peer
+exit 255

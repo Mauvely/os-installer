@@ -6,7 +6,7 @@
 //  Each page owns its own widgets and says what happened through signals;
 //  none of them knows another exists. ui/window.cpp wires them, which is
 //  app-base's "all widget-to-widget wiring in one place" rule moved out of
-//  main.cpp so that the demo in tests/ can drive the same wiring with a fake
+//  main.cpp so that tests/tst_flow.cpp can drive the same wiring with a fake
 //  runner.
 //
 //  Copy follows the design system's CONTENT FUNDAMENTALS: a headline is a
