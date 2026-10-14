@@ -44,8 +44,11 @@ USERDATA
   ;;
 start)
   if ! ss -ltn | grep -q ":$SEED_PORT "; then
-    (cd "$SEEDDIR" && nohup python3 -m http.server "$SEED_PORT" --bind 127.0.0.1 \
-      >"$B/seed-http.log" 2>&1 & echo $! >"$B/seed-http.pid")
+    # Started directly, not in a subshell, so that $! is python's own pid and
+    # `stop` can kill it.
+    nohup python3 -m http.server "$SEED_PORT" --bind 127.0.0.1 --directory "$SEEDDIR" \
+      >"$B/seed-http.log" 2>&1 &
+    echo $! >"$B/seed-http.pid"
   fi
   exec qemu-system-x86_64 -name p6-builder -machine q35,accel=kvm -cpu host -smp 8 -m 8G \
     -display none -serial "file:$B/serial.log" -qmp "unix:$B/qmp.sock,server,nowait" \
