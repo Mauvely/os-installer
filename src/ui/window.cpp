@@ -12,16 +12,21 @@
 #include <QHBoxLayout>
 #include <QLabel>
 #include <QStackedWidget>
+#include <QTimer>
 #include <QVBoxLayout>
 
 namespace ui {
+namespace {
+constexpr int kCopyPollMs = 1000;
+}
 
 Window::Window(Runner &runner, const Config &config, QWidget *parent)
     : QWidget(parent),
       m_runner(runner),
       m_config(config),
       m_installer(new Installer(runner, config, this)),
-      m_stack(new QStackedWidget(this)) {
+      m_stack(new QStackedWidget(this)),
+      m_copyTimer(new QTimer(this)) {
     setObjectName(QStringLiteral("installer"));
     setAttribute(Qt::WA_StyledBackground);
     setWindowTitle(QStringLiteral("Mauvely OS installer"));
@@ -78,13 +83,30 @@ Window::Window(Runner &runner, const Config &config, QWidget *parent)
     connect(m_confirm, &ConfirmPage::confirmed, this, &Window::install);
 
     connect(m_installer, &Installer::stepStarted, m_install, &InstallPage::setStep);
-    connect(m_installer, &Installer::progress, m_install, &InstallPage::setLine);
+    connect(m_installer, &Installer::stepStarted, this, [this](int step) {
+        if (step == Installer::CopyStep)
+            startCopyMeter();
+        else
+            m_copyTimer->stop();
+    });
+    connect(m_installer, &Installer::progress, this, [this](const QString &line) {
+        m_install->setLine(line);
+        // bootc says what it has to fetch once, as the copy begins.
+        if (const qint64 total = copyprogress::totalFromLine(line)) {
+            m_meter.setTotal(total);
+            showCopy();
+        }
+    });
+    m_copyTimer->setInterval(kCopyPollMs);
+    connect(m_copyTimer, &QTimer::timeout, this, &Window::sampleCopy);
     connect(m_installer, &Installer::succeeded, this, [this](const QString &key) {
+        m_copyTimer->stop();
         m_enrolment->clearToken();  // it is on the disk now, and nowhere else
         m_recovery->setKey(key);
         showPage(m_recovery);
     });
     connect(m_installer, &Installer::failed, this, [this](const QString &message, const QString &tail) {
+        m_copyTimer->stop();
         m_failed->setFailure(message, tail);
         showPage(m_failed);
     });
@@ -127,7 +149,21 @@ void Window::install() {
     const disks::Disk disk = m_disk->selected();
     m_install->reset(disk);
     showPage(m_install);
+    m_copyDevice = disk.path;
     m_installer->start({disk, m_enrolment->server(), m_enrolment->token()});
 }
+
+void Window::startCopyMeter() {
+    m_meter = {};
+    m_meter.sample(host::sectorsWritten(m_config, m_copyDevice));
+    m_copyTimer->start();
+}
+
+void Window::sampleCopy() {
+    m_meter.sample(host::sectorsWritten(m_config, m_copyDevice));
+    showCopy();
+}
+
+void Window::showCopy() { m_install->setCopy(m_meter.fraction(), m_meter.text()); }
 
 }  // namespace ui

@@ -34,6 +34,7 @@ add_library(installer_core STATIC
     src/core/brand.h
     src/core/cmdline.cpp        src/core/cmdline.h
     src/core/config.h
+    src/core/copyprogress.cpp   src/core/copyprogress.h
     src/core/disks.cpp          src/core/disks.h
     src/core/enrolment.cpp      src/core/enrolment.h
     src/core/host.cpp           src/core/host.h

@@ -133,12 +133,16 @@ private:
     QPushButton *m_erase;
 };
 
-/** An indeterminate bar: bootc says what it is doing, not how far it is. */
-class BusyBar : public QWidget {
+/** A track and a fill. Given no fraction it sweeps, for work that says what it
+ *  is doing and not how far it has got. */
+class ProgressBar : public QWidget {
     Q_OBJECT
 public:
-    explicit BusyBar(QWidget *parent = nullptr);
+    explicit ProgressBar(QWidget *parent = nullptr);
     QSize sizeHint() const override { return {400, 6}; }
+    /** 0 to 1, or a negative number to sweep. */
+    void setFraction(double fraction);
+    double fraction() const { return m_fraction; }
 
 protected:
     void paintEvent(QPaintEvent *) override;
@@ -146,6 +150,7 @@ protected:
 private:
     QVariantAnimation *m_anim;
     qreal m_phase = 0;
+    double m_fraction = -1;
 };
 
 class InstallPage : public Page {
@@ -154,12 +159,21 @@ public:
     explicit InstallPage(QWidget *parent = nullptr);
     void reset(const disks::Disk &disk);
     void setStep(int step);
+    /** bootc's last line, shown while the copy has nothing of its own to say. */
     void setLine(const QString &line);
+    /** The copy's progress: the bar's fraction, or negative to sweep, and the
+     *  line under it, or empty to show bootc's. Later steps clear both. */
+    void setCopy(double fraction, const QString &text);
 
 private:
+    void showLine();
+
     QList<QLabel *> m_dots;
     QList<QLabel *> m_labels;
+    ProgressBar *m_bar;
     QLabel *m_line;
+    QString m_bootcLine;
+    QString m_copyText;
 };
 
 class RecoveryPage : public Page {

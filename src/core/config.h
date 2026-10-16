@@ -15,6 +15,9 @@ struct Config {
     QString procCmdline = QStringLiteral("/proc/cmdline");
     /** Where the kernel lists TPMs. bootc's `tpm2-luks` needs a TPM 2.0. */
     QString sysClassTpm = QStringLiteral("/sys/class/tpm");
+    /** Where the kernel lists block devices. `<disk>/stat` counts the sectors
+     *  written to a disk, which is how the copy's progress is measured. */
+    QString sysBlock = QStringLiteral("/sys/block");
     /** The full log. On the live system, so in RAM; it never reaches the target. */
     QString logPath = QStringLiteral("/var/log/mauvely-installer.log");
     /** Where the installed root is mounted to write the enrolment files. */

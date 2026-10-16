@@ -305,7 +305,8 @@ void ConfirmPage::setDisk(const disks::Disk &disk) {
 
 // ── Install ──────────────────────────────────────────────────────────────────
 
-BusyBar::BusyBar(QWidget *parent) : QWidget(parent), m_anim(new QVariantAnimation(this)) {
+ProgressBar::ProgressBar(QWidget *parent) : QWidget(parent), m_anim(new QVariantAnimation(this)) {
+    setObjectName(QStringLiteral("bar"));
     setFixedHeight(6);
     m_anim->setStartValue(0.0);
     m_anim->setEndValue(1.0);
@@ -318,7 +319,16 @@ BusyBar::BusyBar(QWidget *parent) : QWidget(parent), m_anim(new QVariantAnimatio
     m_anim->start();
 }
 
-void BusyBar::paintEvent(QPaintEvent *) {
+void ProgressBar::setFraction(double fraction) {
+    m_fraction = fraction < 0 ? -1 : qMin(fraction, 1.0);
+    if (m_fraction < 0 && m_anim->state() != QAbstractAnimation::Running)
+        m_anim->start();
+    else if (m_fraction >= 0)
+        m_anim->stop();
+    update();
+}
+
+void ProgressBar::paintEvent(QPaintEvent *) {
     const Theme &t = Theme::instance();
     QPainter p(this);
     p.setRenderHint(QPainter::Antialiasing);
@@ -327,13 +337,19 @@ void BusyBar::paintEvent(QPaintEvent *) {
     p.setBrush(t.surfaceSunken());
     p.drawRoundedRect(rect(), r, r);
 
-    // A third of the track, sweeping across and out.
-    const qreal w = width() / 3.0;
-    const qreal x = -w + m_phase * (width() + w);
     QPainterPath clip;
     clip.addRoundedRect(rect(), r, r);
     p.setClipPath(clip);
     p.setBrush(t.signal());
+    if (m_fraction >= 0) {
+        // From the left, and never narrower than the bar is tall, so a copy
+        // that has only just begun still shows a mark.
+        p.drawRoundedRect(QRectF(0, 0, qMax<qreal>(height(), width() * m_fraction), height()), r, r);
+        return;
+    }
+    // A third of the track, sweeping across and out.
+    const qreal w = width() / 3.0;
+    const qreal x = -w + m_phase * (width() + w);
     p.drawRoundedRect(QRectF(x, 0, w, height()), r, r);
 }
 
@@ -355,8 +371,10 @@ InstallPage::InstallPage(QWidget *parent)
         m_labels << text;
     }
     content()->addSpacing(space::k24);
-    content()->addWidget(new BusyBar(this));
+    m_bar = new ProgressBar(this);
+    content()->addWidget(m_bar);
     m_line = new QLabel(this);
+    m_line->setObjectName(QStringLiteral("line"));
     m_line->setFont(style::mono(type::kXs));
     m_line->setProperty("role", "faint");
     m_line->setTextFormat(Qt::PlainText);
@@ -368,7 +386,8 @@ void InstallPage::reset(const disks::Disk &disk) {
     m_labels[0]->setText(QStringLiteral("Copy Mauvely OS to %1").arg(disk.title()));
     m_labels[1]->setText(QStringLiteral("Add a recovery key"));
     m_labels[2]->setText(QStringLiteral("Save the server and token"));
-    m_line->clear();
+    m_bootcLine.clear();
+    setCopy(-1, QString());
     setStep(0);
 }
 
@@ -392,9 +411,26 @@ void InstallPage::setStep(int step) {
         m_labels[i]->style()->unpolish(m_labels[i]);
         m_labels[i]->style()->polish(m_labels[i]);
     }
+    // Only the copy has numbers or bootc's words; the steps after it sweep alone.
+    if (step > 0) {
+        m_bootcLine.clear();
+        setCopy(-1, QString());
+    }
 }
 
 void InstallPage::setLine(const QString &line) {
+    m_bootcLine = line;
+    showLine();
+}
+
+void InstallPage::setCopy(double fraction, const QString &text) {
+    m_bar->setFraction(fraction);
+    m_copyText = text;
+    showLine();
+}
+
+void InstallPage::showLine() {
+    const QString &line = m_copyText.isEmpty() ? m_bootcLine : m_copyText;
     m_line->setText(m_line->fontMetrics().elidedText(line.trimmed(), Qt::ElideRight, kColumn));
 }
 

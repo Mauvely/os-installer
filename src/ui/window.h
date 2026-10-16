@@ -10,11 +10,13 @@
 // ─────────────────────────────────────────────────────────────────────────────
 
 #include "core/config.h"
+#include "core/copyprogress.h"
 
 #include <QWidget>
 
 class Installer;
 class QStackedWidget;
+class QTimer;
 class Runner;
 
 namespace ui {
@@ -39,11 +41,18 @@ private:
     void showPage(QWidget *page);
     void loadDisks();
     void install();
+    /** The copy's progress: the baseline at its start, then a reading a second. */
+    void startCopyMeter();
+    void sampleCopy();
+    void showCopy();
 
     Runner &m_runner;
     Config m_config;
     Installer *m_installer;
     QStackedWidget *m_stack;
+    copyprogress::Meter m_meter;
+    QTimer *m_copyTimer;
+    QString m_copyDevice;  // /dev/vda
 
     WelcomePage *m_welcome;
     EnrolmentPage *m_enrolment;

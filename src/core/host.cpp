@@ -1,6 +1,7 @@
 #include "core/host.h"
 
 #include "core/cmdline.h"
+#include "core/copyprogress.h"
 #include "core/runner.h"
 
 #include <QDir>
@@ -24,6 +25,13 @@ bool hasTpm2(const Config &config) {
         if (f.open(QIODevice::ReadOnly) && f.readAll().trimmed() == "2") return true;
     }
     return false;
+}
+
+qint64 sectorsWritten(const Config &config, const QString &devicePath) {
+    const QString name = copyprogress::sysfsName(devicePath);
+    if (name.isEmpty()) return -1;
+    QFile f(config.sysBlock + QLatin1Char('/') + name + QStringLiteral("/stat"));
+    return f.open(QIODevice::ReadOnly) ? copyprogress::sectorsWritten(f.readAll()) : -1;
 }
 
 QList<disks::Disk> listDisks(Runner &runner, const Config &config, QString *error) {

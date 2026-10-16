@@ -78,6 +78,30 @@ class TestFlow : public QObject {
         QVERIFY(QTest::qWaitForWindowExposed(m_window.get()));
     }
 
+    /** What the kernel counts for vda: 512-byte sectors written, field 7. */
+    void setSectorsWritten(qint64 sectors) {
+        QVERIFY(writeFile(m_config.sysBlock + "/vda/stat",
+                          "1 0 8 1 2 0 " + QByteArray::number(sectors) + " 5 0 3 6\n"));
+    }
+
+    /** Past the confirm page, with bootc held after it prints `lines`. */
+    void holdBootc(const QStringList &lines, QSemaphore &started, QSemaphore &release) {
+        m_fake.before = [lines, &started, &release](const QString &program, const Runner::LineFn &onLine) {
+            if (program != QLatin1String("bootc")) return;
+            for (const QString &l : lines)
+                if (onLine) onLine(l);
+            started.release();
+            release.acquire();
+        };
+        newWindow();
+        toDiskPage();
+        chooseVda();
+        click("Continue");
+        click("Erase and install");
+        QCOMPARE(pageName(), QStringLiteral("install"));
+        QVERIFY(started.tryAcquire(1, 5000));
+    }
+
     void toDiskPage() {
         click("Start");
         QCOMPARE(pageName(), QStringLiteral("enrolment"));
@@ -103,6 +127,7 @@ private slots:
         m_config.sysClassTpm = m_dir.filePath("tpm");
         m_config.logPath = m_dir.filePath("log/mauvely-installer.log");
         m_config.mountPoint = m_dir.filePath("target");
+        m_config.sysBlock = m_dir.filePath("block");
         QVERIFY(writeFile(m_config.procCmdline,
                           "root=live:CDLABEL=Mauvely-OS-Installer rd.live.image rd.live.overlay.overlayfs=1 "
                           "selinux=0 mauvely.server=http://10.0.2.2:8798\n"));
@@ -112,6 +137,7 @@ private slots:
     void init() {
         m_fake.reset();
         m_fake.before = nullptr;
+        QDir(m_config.sysBlock).removeRecursively();
     }
 
     void noTpmCannotStart() {
@@ -201,6 +227,68 @@ private slots:
         QVERIFY(!m_fake.lines().contains("systemctl reboot"));
         click("Restart");
         QCOMPARE(m_fake.lines().last(), QStringLiteral("systemctl reboot"));
+    }
+
+    void copyFollowsTheDisk() {
+        const qint64 before = 4000000;  // what vda had counted before this install
+        setSectorsWritten(before);
+        QSemaphore started, release;
+        holdBootc({"Installing image: docker://ghcr.io/mauvely/os:stable",
+                   "layers already present: 0; layers needed: 266 (7.5 GB)"},
+                  started, release);
+        auto *bar = page()->findChild<ui::ProgressBar *>("bar");
+        auto *line = page()->findChild<QLabel *>("line");
+        QVERIFY(bar && line);
+
+        // The total is known and nothing has been written since the step began.
+        QTRY_COMPARE_WITH_TIMEOUT(line->text(), QStringLiteral("0.0 of 7.5 GB"), 5000);
+        QCOMPARE(bar->fraction(), 0.0);
+
+        // 3.1 GB later.
+        setSectorsWritten(before + 6054687);
+        QTRY_COMPARE_WITH_TIMEOUT(line->text(), QStringLiteral("3.1 of 7.5 GB"), 5000);
+        QVERIFY(qAbs(bar->fraction() - 3.1 / 7.5) < 0.001);
+        shot("5b-install-copying");
+
+        // More than the image: short of full, and never "9.0 of 7.5".
+        setSectorsWritten(before + 17578125);
+        QTRY_COMPARE_WITH_TIMEOUT(line->text(), QStringLiteral("7.5 of 7.5 GB"), 5000);
+        QCOMPARE(bar->fraction(), 0.99);
+
+        release.release();
+        QTRY_COMPARE_WITH_TIMEOUT(pageName(), QStringLiteral("recovery"), 5000);
+        // The steps after the copy sweep, with nothing under the bar.
+        QCOMPARE(bar->fraction(), -1.0);
+        QVERIFY(line->text().isEmpty());
+    }
+
+    void copyWithoutAReadableCounterKeepsBootcsLine() {
+        QSemaphore started, release;  // no vda/stat: a disk the kernel does not count
+        holdBootc({"layers already present: 0; layers needed: 266 (7.5 GB)"}, started, release);
+        auto *line = page()->findChild<QLabel *>("line");
+        QTRY_COMPARE_WITH_TIMEOUT(line->text(), QStringLiteral("layers already present: 0; layers needed: 266 (7.5 GB)"), 5000);
+        QTest::qWait(1500);  // past a poll
+        QCOMPARE(line->text(), QStringLiteral("layers already present: 0; layers needed: 266 (7.5 GB)"));
+        QCOMPARE(page()->findChild<ui::ProgressBar *>("bar")->fraction(), -1.0);
+        QCOMPARE(pageName(), QStringLiteral("install"));
+        release.release();
+        QTRY_COMPARE_WITH_TIMEOUT(pageName(), QStringLiteral("recovery"), 5000);
+    }
+
+    void copyWithoutATotalShowsWhatIsWritten() {
+        const qint64 before = 4000000;
+        setSectorsWritten(before);
+        QSemaphore started, release;
+        holdBootc({"Installing image: docker://ghcr.io/mauvely/os:stable"}, started, release);
+        auto *bar = page()->findChild<ui::ProgressBar *>("bar");
+        auto *line = page()->findChild<QLabel *>("line");
+        QTRY_COMPARE_WITH_TIMEOUT(line->text(), QStringLiteral("Installing image: docker://ghcr.io/mauvely/os:stable"), 5000);
+
+        setSectorsWritten(before + 6054687);
+        QTRY_COMPARE_WITH_TIMEOUT(line->text(), QStringLiteral("3.1 GB written"), 5000);
+        QCOMPARE(bar->fraction(), -1.0);  // it sweeps: there is nothing to measure against
+        release.release();
+        QTRY_COMPARE_WITH_TIMEOUT(pageName(), QStringLiteral("recovery"), 5000);
     }
 
     void failedThenAgain() {

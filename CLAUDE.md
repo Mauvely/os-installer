@@ -21,6 +21,7 @@ superproject. This repo is its phase P6.
 | `src/core/installer.cpp` | The sequence: re-check the disk, find the payload, bootc, the recovery key, the two files, unmount and close. Every command and its exit status is logged to `/var/log/mauvely-installer.log` |
 | `src/core/disks.cpp` | What may be offered for wiping, from `lsblk --json`: whole disks only, never the live medium, never anything mounted |
 | `src/core/bootc.h` | The install arguments, the target reference (`ghcr.io/mauvely/os:stable`, T4) and the failure classification |
+| `src/core/copyprogress.cpp` | The copy's progress: the total from bootc's `layers needed` line, the bytes written from `/sys/block/<disk>/stat`, and the text under the bar. `host::sectorsWritten` reads the file |
 | `src/core/luks.cpp` | Finding the new LUKS partition, and reading the recovery key out of `systemd-cryptenroll` |
 | `src/core/target.cpp` | Writing `/etc/mauvely/{server,enrol}` into the deployment's `etc` |
 | `src/core/enrolment.cpp`, `cmdline.cpp` | The server and the token format. The `mauvely.server=` and `rd.live.image` kernel arguments |
@@ -84,6 +85,16 @@ Each of these is something a change would get wrong.
     runs `umount /run/bootc/storage` and `cryptsetup close root`.
   - Any other non-zero exit is a failure.
   - A clean exit 0 skips the workaround, so a fixed bootc needs no change here.
+- **The copy's progress is measured, not reported.** bootc prints nothing between
+  `layers needed: N (X GB)` and the end of the deploy, because its own bar is
+  drawn only on a terminal.
+  - `ui/window.cpp` reads `/sys/block/<disk>/stat` once a second: field 7,
+    sectors written, always 512 bytes. A partition's writes count on its disk,
+    so LUKS's do too.
+  - The bar is that count against bootc's total, and stops at 99% until the
+    step ends. Bytes written are not the image's size.
+  - With no total, or no readable counter, the page shows the amount written
+    under a sweeping bar, or bootc's own line.
 - **`tpm2-luks` binds the TPM to no PCRs.** That is what lets the live system
   open the volume to add the recovery key and write the two files.
   - The image's `mauvely-seal.service` re-binds the TPM to PCR 7 and drops
@@ -165,6 +176,7 @@ page:
 - a VM with more than one candidate disk;
 - Wi-Fi;
 - a non-US keyboard;
+- the copy's progress readout; `tst_flow` covers it with a fake counter;
 - the no-TPM and failure pages on the live system; these are covered only
   offscreen.
 

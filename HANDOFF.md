@@ -1,7 +1,72 @@
 # Handoff
 
-2026-10-14, plan 19 phase P6. The installer is built and verified end to end
-in a VM. `CLAUDE.md` describes the shape of the repo, how the install works and
+## 2026-10-16: progress for the copy
+
+Timur tested on Proxmox and took the install for hung. bootc prints
+`layers already present: 0; layers needed: 266 (7.5 GB)` and nothing more until
+the copy ends, so the page showed that line and a sweeping bar for minutes.
+
+**What the page shows now.** While "Copy Mauvely OS to vda" runs, the bar fills
+and the line under it reads `3.1 of 7.5 GB`, in the same mono faint text as
+before. The numbers are bytes written to the target disk against the total in
+bootc's line. The bar stops at 99% and the text at `7.5 of 7.5 GB` until the
+step ends. Screenshot: `proof/copy-progress.png`, from `tst_flow`.
+
+**What changed.**
+
+- `src/core/copyprogress.{h,cpp}` is new and pure: the size parse
+  (`B`, `kB`/`MB`/`GB`/`TB`, `KiB`…`TiB`, `byte(s)`), the stat parse, the
+  `/dev/vda` to `vda` mapping and `Meter`, which holds the baseline, the total,
+  the clamp and the text.
+- `Config::sysBlock` and `host::sectorsWritten()` read
+  `/sys/block/<disk>/stat`. The tests point `sysBlock` at a temp directory.
+  That is the seam, not `Runner`: this is a file, like `sysClassTpm`, and
+  `cat` once a second would only start a process to read one line.
+- `ui/window.cpp` owns a 1 s `QTimer`. It takes the baseline when the copy step
+  starts, samples every second, and stops at the next step, success or failure.
+  `Installer` did not change.
+- `BusyBar` is now `ProgressBar`, with `setFraction()`: negative sweeps, as
+  before. `InstallPage::setCopy()` takes the fraction and the line.
+
+**Fallbacks, none of them an error.**
+
+- No total yet: bootc's last line and a sweeping bar, as before.
+- Total but no readable counter: the same, so bootc's `layers needed` line stays.
+- Counter but no total: `3.1 GB written` under a sweeping bar, once more than
+  100 MB has been written. The partitioning and the LUKS header write less than
+  that and would otherwise flash a number before the copy starts.
+
+**One change beyond the copy step.** The steps after it now clear the line and
+sweep with nothing under the bar. Before, the line kept bootc's last output
+through "Add a recovery key" and "Save the server and token", which on the
+leaked-mount ending is bootc's own `error: … Closing root LUKS device failed`.
+
+**Verified.** All three suites pass, 124 tests: `tst_logic` 101 (31 new: the
+size parse, the stat parse, the sysfs name, the file read, and `Meter`'s delta,
+clamp, monotonic and fallback behaviour), `tst_installer` 13, `tst_flow` 10 (3
+new: progress following a faked counter, the two fallbacks). `tst_flow` ran six
+times in a row without a failure. The page was rendered offscreen at 1280×800
+and read for clipping. Nothing touched a disk.
+
+**Never run: an install with it.** Open questions for the next VM run:
+
+- **Bytes written against the total.** The total is bootc's layer size. The
+  kernel counts what reaches the disk: xfs metadata, ostree's checkout and its
+  sharing move it, and the page cache delays it, so the bar may lag and then
+  jump when the copy flushes. If it stalls at 70% for good, the clamp hides
+  nothing and the total needs a factor. `cat /sys/block/vda/stat` before and
+  after, from a test layer's SSH, gives the number.
+- **That the whole disk's counter includes LUKS's writes.** The kernel adds a
+  partition's I/O to its disk, and dm-crypt submits to the partition, but that
+  is from the kernel's accounting and not seen on a disk.
+- **bootc's wording.** The parse is written against the one line in
+  `proof/live-install-p5-payload.log` and the units glib's `g_format_size`
+  prints, which is what that format looks like. bootc's source was not read. A
+  different line leaves the page on the `written` fallback.
+
+## 2026-10-14: plan 19 phase P6
+
+The installer is built and verified end to end in a VM. `CLAUDE.md` describes the shape of the repo, how the install works and
 how to run the VM test. This file covers what that does not.
 
 **Since T4 (2026-10-14) the target reference is `ghcr.io/mauvely/os:stable`.**

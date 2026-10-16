@@ -28,6 +28,10 @@ bool isLiveSystem(const Config &config);
  *  one, and finding that out after `--wipe` has run would cost the disk. */
 bool hasTpm2(const Config &config);
 
+/** Sectors written to the disk at `devicePath` since boot, from the kernel's
+ *  counter; -1 when it cannot be read. See core/copyprogress.h. */
+qint64 sectorsWritten(const Config &config, const QString &devicePath);
+
 /** Every whole disk, each with its exclusion decided. Empty, with `error` set,
  *  when lsblk fails. */
 QList<disks::Disk> listDisks(Runner &runner, const Config &config, QString *error = nullptr);

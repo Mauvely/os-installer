@@ -7,6 +7,7 @@
 #include "core/bootc.h"
 #include "core/cmdline.h"
 #include "core/config.h"
+#include "core/copyprogress.h"
 #include "core/disks.h"
 #include "core/enrolment.h"
 #include "core/host.h"
@@ -248,6 +249,163 @@ private slots:
         QVERIFY(!host::hasTpm2(c));
         QVERIFY(writeFile(c.sysClassTpm + "/tpm1/tpm_version_major", "2\n"));
         QVERIFY(host::hasTpm2(c));
+    }
+
+    // ── copy progress ───────────────────────────────────────────────────────
+
+    void copyTotal_data() {
+        QTest::addColumn<QString>("line");
+        QTest::addColumn<qint64>("bytes");
+        // The line as P6's run printed it, and the other units glib's
+        // g_format_size can give it.
+        QTest::newRow("the real line") << "layers already present: 0; layers needed: 266 (7.5 GB)" << qint64(7500000000);
+        QTest::newRow("with a timestamp") << "02:36:59 layers already present: 0; layers needed: 266 (7.5 GB)" << qint64(7500000000);
+        QTest::newRow("some present") << "layers already present: 12; layers needed: 254 (6.1 GB)" << qint64(6100000000);
+        QTest::newRow("MB") << "layers already present: 0; layers needed: 3 (512.3 MB)" << qint64(512300000);
+        QTest::newRow("kB") << "layers already present: 0; layers needed: 1 (980 kB)" << qint64(980000);
+        QTest::newRow("TB") << "layers already present: 0; layers needed: 9 (1.4 TB)" << qint64(1400000000000);
+        QTest::newRow("GiB") << "layers already present: 0; layers needed: 266 (7.5 GiB)" << qint64(8053063680);
+        QTest::newRow("MiB") << "layers already present: 0; layers needed: 3 (512 MiB)" << qint64(536870912);
+        QTest::newRow("bytes") << "layers already present: 0; layers needed: 1 (999 bytes)" << qint64(999);
+        QTest::newRow("one byte") << "layers already present: 0; layers needed: 1 (1 byte)" << qint64(1);
+        QTest::newRow("nothing to fetch") << "layers already present: 266; layers needed: 0 (0 bytes)" << qint64(0);
+        QTest::newRow("another line") << "Installing image: docker://ghcr.io/mauvely/os:stable" << qint64(0);
+        QTest::newRow("no size") << "layers already present: 0; layers needed: 266" << qint64(0);
+        QTest::newRow("a unit it does not print") << "layers already present: 0; layers needed: 266 (7.5 furlongs)" << qint64(0);
+        QTest::newRow("empty") << "" << qint64(0);
+    }
+    void copyTotal() {
+        QFETCH(QString, line);
+        QFETCH(qint64, bytes);
+        QCOMPARE(copyprogress::totalFromLine(line), bytes);
+    }
+
+    void copyStat_data() {
+        QTest::addColumn<QByteArray>("stat");
+        QTest::addColumn<qint64>("sectors");
+        // Field 7 is sectors written; this is a real line from an NVMe disk.
+        QTest::newRow("real") << QByteArray(" 3680926   199961 520197888  2068253 30685184  1721908 1549671740  3209514        0  1298819  5521827        0        0        0        0  1558552   244058\n")
+                              << qint64(1549671740);
+        QTest::newRow("old kernel, eleven fields") << QByteArray("10 0 80 5 20 0 160 9 0 7 14\n") << qint64(160);
+        QTest::newRow("nothing written") << QByteArray("10 0 80 5 0 0 0 0 0 7 14\n") << qint64(0);
+        QTest::newRow("too few fields") << QByteArray("10 0 80 5 20 0\n") << qint64(-1);
+        QTest::newRow("not numbers") << QByteArray("a b c d e f g h\n") << qint64(-1);
+        QTest::newRow("negative") << QByteArray("1 2 3 4 5 6 -7 8\n") << qint64(-1);
+        QTest::newRow("empty") << QByteArray() << qint64(-1);
+    }
+    void copyStat() {
+        QFETCH(QByteArray, stat);
+        QFETCH(qint64, sectors);
+        QCOMPARE(copyprogress::sectorsWritten(stat), sectors);
+    }
+
+    void copySysfsName() {
+        QCOMPARE(copyprogress::sysfsName("/dev/vda"), QStringLiteral("vda"));
+        QCOMPARE(copyprogress::sysfsName("/dev/nvme0n1"), QStringLiteral("nvme0n1"));
+        QCOMPARE(copyprogress::sysfsName("/dev/mmcblk0"), QStringLiteral("mmcblk0"));
+        QCOMPARE(copyprogress::sysfsName("/dev/cciss/c0d0"), QStringLiteral("cciss!c0d0"));  // sysfs has no slash in a name
+        QVERIFY(copyprogress::sysfsName("vda").isEmpty());
+        QVERIFY(copyprogress::sysfsName("/dev/").isEmpty());
+        QVERIFY(copyprogress::sysfsName(QString()).isEmpty());
+    }
+
+    void copyReadsTheDisksCounter() {
+        QTemporaryDir dir;
+        Config c;
+        c.sysBlock = dir.filePath("block");
+        QCOMPARE(host::sectorsWritten(c, "/dev/vda"), qint64(-1));  // no such disk
+        QVERIFY(writeFile(c.sysBlock + "/vda/stat", "10 0 80 5 20 0 2048 9 0 7 14\n"));
+        QVERIFY(writeFile(c.sysBlock + "/nvme0n1/stat", "10 0 80 5 20 0 4096 9 0 7 14\n"));
+        QCOMPARE(host::sectorsWritten(c, "/dev/vda"), qint64(2048));
+        QCOMPARE(host::sectorsWritten(c, "/dev/nvme0n1"), qint64(4096));
+        QCOMPARE(host::sectorsWritten(c, "vda"), qint64(-1));
+        QVERIFY(writeFile(c.sysBlock + "/vda/stat", "garbage\n"));
+        QCOMPARE(host::sectorsWritten(c, "/dev/vda"), qint64(-1));
+    }
+
+    void meterIsTheDeltaFromTheFirstReading() {
+        copyprogress::Meter m;
+        m.setTotal(7500000000);
+        m.sample(1000000);  // the baseline: what the disk had counted before the copy
+        QCOMPARE(m.written(), qint64(0));
+        QCOMPARE(m.fraction(), 0.0);
+        QCOMPARE(m.text(), QStringLiteral("0.0 of 7.5 GB"));
+        // 3.1 GB in 512-byte sectors, however large the disk's own are.
+        m.sample(1000000 + 6054687);
+        QCOMPARE(m.written(), qint64(6054687) * 512);
+        QCOMPARE(m.text(), QStringLiteral("3.1 of 7.5 GB"));
+        QVERIFY(qAbs(m.fraction() - 3.1 / 7.5) < 0.001);
+    }
+
+    void meterStopsShortOfFull() {
+        copyprogress::Meter m;
+        m.setTotal(7500000000);
+        m.sample(0);
+        m.sample(7500000000 / 512);  // exactly the total
+        QCOMPARE(m.fraction(), 0.99);
+        QCOMPARE(m.text(), QStringLiteral("7.5 of 7.5 GB"));
+        m.sample(9000000000 / 512);  // more than the image, as with metadata
+        QCOMPARE(m.fraction(), 0.99);
+        QCOMPARE(m.text(), QStringLiteral("7.5 of 7.5 GB"));  // never "9.0 of 7.5"
+        QVERIFY(m.written() > m.total());
+    }
+
+    void meterNeverGoesBack() {
+        copyprogress::Meter m;
+        m.setTotal(4000000000);
+        m.sample(5000);
+        m.sample(5000 + 1000000);
+        const qint64 before = m.written();
+        m.sample(5000 + 400000);  // a counter that fell back
+        QCOMPARE(m.written(), before);
+        m.sample(100);  // below the baseline
+        QCOMPARE(m.written(), before);
+        m.sample(-1);  // unreadable
+        QCOMPARE(m.written(), before);
+    }
+
+    void meterWithoutATotalShowsWhatIsWritten() {
+        copyprogress::Meter m;
+        m.sample(0);
+        // Partitioning and the LUKS header: too little to say anything about.
+        m.sample(60000);  // 30 MB
+        QCOMPARE(m.fraction(), -1.0);
+        QVERIFY(m.text().isEmpty());
+        m.sample(400000);  // 205 MB
+        QCOMPARE(m.fraction(), -1.0);
+        QCOMPARE(m.text(), QStringLiteral("205 MB written"));
+        m.sample(6054687);
+        QCOMPARE(m.fraction(), -1.0);
+        QCOMPARE(m.text(), QStringLiteral("3.1 GB written"));
+    }
+
+    void meterWithoutACounterSaysNothing() {
+        copyprogress::Meter m;
+        m.setTotal(7500000000);  // the total alone is bootc's own line again
+        m.sample(-1);
+        m.sample(-1);
+        QCOMPARE(m.fraction(), -1.0);
+        QVERIFY(m.text().isEmpty());
+        m.setTotal(0);
+        QVERIFY(m.text().isEmpty());
+    }
+
+    void meterBaselineWaitsForAReading() {
+        copyprogress::Meter m;
+        m.setTotal(2000000000);
+        m.sample(-1);  // unreadable at the start
+        m.sample(900000);  // the first it can read is the baseline
+        QCOMPARE(m.written(), qint64(0));
+        m.sample(900000 + 1953125);  // 1 GB
+        QCOMPARE(m.text(), QStringLiteral("1.0 of 2.0 GB"));
+    }
+
+    void meterSmallTotalIsInMegabytes() {
+        copyprogress::Meter m;
+        m.setTotal(512000000);
+        m.sample(0);
+        m.sample(250000000 / 512);
+        QCOMPARE(m.text(), QStringLiteral("250 of 512 MB"));
     }
 
     // ── bootc ───────────────────────────────────────────────────────────────
