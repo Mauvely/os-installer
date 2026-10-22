@@ -70,9 +70,13 @@ All against a fake accounts service, never mauvely.com or mauvely.dev.
   service starts with no activation token, the OpenURI portal handing a link
   to a Flatpak browser, and the window's icon from the desktop file.
 - Against website-main's real `embed=os` pages (staging only, website-main
-  `1379948`) or any real single sign-on. Google sign-in is expected to refuse
-  the window (`disallowed_useragent`); "Use your browser instead" is the way
-  out, and has only been clicked against the fake.
+  `1379948`, and `d9bb2dc`, which takes personal Google, GitHub and Apple
+  sign-in off them: in the window it is the Mauvely account or the
+  organisation's single sign-on) or any real single sign-on. An organisation
+  whose provider is Google Workspace still meets Google's block on embedded
+  views (`disallowed_useragent`), and passkeys are cancelled here, so "Use
+  your browser instead" stays as the quiet way out. It has only been clicked
+  against the fake.
 - A colour-scheme change while the window is open (the Qt side follows
   `colorSchemeChanged`; whether the page's `prefers-color-scheme` follows live
   was not seen).

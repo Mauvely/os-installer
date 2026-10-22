@@ -158,8 +158,10 @@ the window's own rules.
   `closed` on standard output, and waits for `finish`, so mauvely-session can
   look at the link once more in case the person approved just before. Closed
   while it shows the code for the browser, it only hides.
-- **"Use your browser instead"** is always under the page, because some
-  sign-ins refuse an embedded browser (Google's does). It opens
+- **"Use your browser instead"** is always under the page, as a quiet way
+  out: an organisation on Google Workspace meets Google's block on embedded
+  browsers, and passkeys are not offered in the window. The window's pages
+  show no personal Google, GitHub or Apple sign-in (website-main). It opens
   `<origin>/link`, without the code, in the default browser, and shows the
   code in the window.
 - **Contained:** an off-the-record profile; no devtools, downloads, file
