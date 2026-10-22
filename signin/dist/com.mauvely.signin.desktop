@@ -1,0 +1,10 @@
+[Desktop Entry]
+Type=Application
+Name=Sign in to Mauvely
+Comment=Link this computer to your Mauvely account
+# Started by mauvely-session with the code on its standard input, never from a
+# menu: run on its own it has no code, and exits.
+Exec=/usr/bin/mauvely-signin
+Icon=com.mauvely.signin
+Terminal=false
+NoDisplay=true

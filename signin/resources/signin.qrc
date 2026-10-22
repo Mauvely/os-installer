@@ -1,0 +1,7 @@
+<!DOCTYPE RCC>
+<RCC version="1.0">
+    <!-- The Mauvely mark, os-image's design/plasma/icons/…/com.mauvely.start.svg. -->
+    <qresource prefix="/signin">
+        <file alias="mark.svg">mark.svg</file>
+    </qresource>
+</RCC>

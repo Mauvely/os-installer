@@ -70,3 +70,10 @@ if(INSTALLER_TESTS)
         set_tests_properties(${t} PROPERTIES ENVIRONMENT "QT_QPA_PLATFORM=offscreen")
     endforeach()
 endif()
+
+# ── mauvely-signin, the OS's sign-in window (signin/) ────────────────────────
+# Off by default: it needs Qt WebEngine, which the installer does not.
+option(MAUVELY_SIGNIN "Build mauvely-signin, which needs Qt WebEngine" OFF)
+if(MAUVELY_SIGNIN)
+    add_subdirectory(signin)
+endif()

@@ -32,7 +32,12 @@ superproject. This repo is its phase P6.
 | `image/` | `iso.yaml` (the ISO's label and kernel arguments) and `mauvely-installer.service` (the kiosk on tty1) |
 | `scripts/` | Image, ISO and VM test tooling. `env.sh` holds the paths, ports and the pinned image-builder |
 | `scripts/test-*/` | **TEST ONLY** layers: root SSH with a throwaway key, and the local server on the installer's kernel command line |
-| `proof/` | What the VM runs showed: screens, the live log, and `verify-installed.sh`'s reports |
+| `proof/` | What the VM runs showed: screens, the live log, and `verify-installed.sh`'s reports. `signin-*.png` are the sign-in window's |
+| `signin/` | **`mauvely-signin`, the installed OS's sign-in window**, not part of the installer. Built only with `-DMAUVELY_SIGNIN=ON`; os-image builds it from this repo at `installer.ref`. See "The sign-in window" below |
+| `signin/src/protocol.cpp` | What mauvely-session writes on its standard input (the code and the accounts origin, then `finish`) and the one thing it says back (`closed`). Pure |
+| `signin/src/navpolicy.cpp` | Where the window may go, and what goes to the default browser instead. Pure |
+| `signin/src/signinpage.cpp`, `signinwindow.cpp` | The contained page (off the record, every permission denied) and the frameless window around it |
+| `signin/tests/tst_signin.cpp` | The protocol and the policy, and the binary run as mauvely-session runs it |
 
 ### What came from app-base
 
@@ -43,6 +48,16 @@ At app-base `9e30321`:
 - **`src/core/theme.{h,cpp}`**: a modified copy. Organisation branding is removed: `setBrandRamp`, `clearBrandRamp`, `isBranded` and their members are gone, and `brandStep()` reads `brand::violet()`. The installer runs before any organisation is known. Do not add it to a copies table.
 - **`resources/fonts/`**: Baloo 2 (ExtraBold and Regular), Inter and JetBrains Mono. Phosphor, `tokens.cpp` and the widget kit were not copied.
 
+At app-base `4b4fc74`, for the sign-in window only:
+
+- **`src/ui/framelesswindow.{h,cpp}`**: byte-identical to app-base's and the
+  five other pinned copies (`git hash-object`: `c1117833…` and `03846489…`).
+  It is a seventh copy the superproject's table does not list yet. Never edit
+  it here; the installer itself does not compile it.
+
+The mark, `signin/resources/mark.svg`, is os-image's
+`design/plasma/icons/hicolor/scalable/apps/com.mauvely.start.svg` at `c19d5cf`.
+
 ## Building and testing
 
 ```sh
@@ -51,7 +66,10 @@ cmake --build ~/.cache/mauvely-os/p6/build -j24
 ctest --test-dir ~/.cache/mauvely-os/p6/build
 ```
 
-- The tests need no root and no disk, and start no process.
+- The installer's tests need no root and no disk, and start no process.
+- **The sign-in window** needs Qt 6.8 or later with WebEngine and Svg. Add
+  `-DMAUVELY_SIGNIN=ON` and build `--target mauvely-signin tst_signin`;
+  `tst_signin` starts the real binary, offscreen.
 - `INSTALLER_SHOTS=<dir>` makes `tst_flow` save each page as a PNG.
 - The image build runs the same tests (`podman build`).
 
@@ -115,6 +133,47 @@ Each of these is something a change would get wrong.
 - **Testing a recovery key needs the tokens off.** With a TPM token bound to
   no PCRs, `cryptsetup open --test-passphrase` unlocks through the token and
   accepts any key. Use `--disable-external-tokens --key-slot <recovery slot>`.
+
+## The sign-in window
+
+`mauvely-signin` is how a person links Mauvely OS to their Mauvely account:
+`mauvely-session` (os-agent) starts it when this computer is not linked, and
+it shows website-main's `<accounts origin>/link?code=<code>&embed=os`, where
+they sign in (password and second factor, or their organisation's single
+sign-on) and approve. os-agent's `docs/broker.md` has the whole flow; these are
+the window's own rules.
+
+- **The code comes on standard input only**, as one JSON line,
+  `{"code","origin"}`. The window reads nothing from argv, which every local
+  user can read, and with the code any of them could approve the link for
+  their own account. Qt and Chromium are given argv[0] alone, and
+  `QTWEBENGINE_REMOTE_DEBUGGING` and `QTWEBENGINE_CHROMIUM_FLAGS` are cleared:
+  a debugging port listens on localhost for every uid.
+- **It ends only when told.** A second line, or the end of input, is
+  `finish`: the window hides, signs out the session made in it with the
+  page's own `fetch('/api/auth/signout', …)`, then exits 0. That has to come
+  after mauvely-session's poll has claimed the link: website-main re-checks
+  the approving session at the claim, so signing out first burns the link.
+- **Closing it is "Later"**, and still not the end: the window hides, writes
+  `closed` on standard output, and waits for `finish`, so mauvely-session can
+  look at the link once more in case the person approved just before. Closed
+  while it shows the code for the browser, it only hides.
+- **"Use your browser instead"** is always under the page, because some
+  sign-ins refuse an embedded browser (Google's does). It opens
+  `<origin>/link`, without the code, in the default browser, and shows the
+  code in the window.
+- **Contained:** an off-the-record profile; no devtools, downloads, file
+  chooser, full screen or passkey prompt; every permission denied. Navigation
+  is `navpolicy.h`'s table: the accounts origin, and redirects, form posts and
+  the page's own navigations anywhere (single sign-on); a clicked link
+  elsewhere, and any new window, goes to the default browser (the OpenURI
+  portal, or `xdg-open` with the address as its one argument), and nothing
+  that holds the code ever does.
+- **Exit status:** 0 when finished, 2 for a bad first line, 3 when the page's
+  renderer died. mauvely-session treats anything but 0 as a window that
+  failed, and shows the code another way.
+- **The app id is `com.mauvely.signin`**, with a desktop file that is
+  `NoDisplay=true`, and the mark as its icon.
 
 ## Rules
 

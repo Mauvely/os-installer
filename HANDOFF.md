@@ -1,5 +1,91 @@
 # Handoff
 
+## 2026-10-22: `mauvely-signin`, the OS's sign-in window
+
+A second program lives here now: `signin/`, built only with
+`-DMAUVELY_SIGNIN=ON`. It replaces os-agent's two kdialog windows (the offer
+and the code) with one frameless, branded Qt WebEngine window around
+website-main's `/link?code=<code>&embed=os`. os-image builds it from
+`installer.ref`. The rules are in `CLAUDE.md`, "The sign-in window"; the flow
+from mauvely-session's side is os-agent's `docs/broker.md`.
+
+**What it looks like:** `proof/signin-dark.png`, `signin-light.png` (the page),
+`signin-browser-*.png` (after "Use your browser instead"),
+`signin-sso-provider.png` (single sign-on on another origin, the header naming
+its host), `signin-full-site.png` (the full site, as production serves it
+until `embed=os` ships there: usable, but the analytics consent card covers
+part of it, and it comes back every time because the profile keeps nothing).
+All against a fake accounts service, never mauvely.com or mauvely.dev.
+
+**Verified.**
+- `tst_signin`, 21 tests: the protocol, the navigation policy table, the code
+  never handed to the browser, the header's host line, and the real binary: a
+  bad first line exits 2, argv is ignored, the end of input finishes it with
+  exit 0 inside the sign-out's bound, and no debugging port opens when the
+  environment asks for one. That last one was sabotaged (the scrub removed)
+  and failed. The installer's own three suites are unchanged and pass.
+- Built and tested on Fedora 44's Qt 6.11.2 in os-image's builder stage (here
+  Qt 6.12 base, 6.11.2 WebEngine).
+- In the nested sway, on a private bus with no activation, with the KDE
+  platform theme and os-image's Mauvely colour schemes: light and dark follow
+  the scheme, and the page's `prefers-color-scheme` follows too. Clicked
+  through: a same-origin link stays, an off-site link and a `target=_blank`
+  go to `xdg-open` (no portal on that bus), a link holding the code and a
+  `file:` link go nowhere, the context menu has only Back, Forward and
+  Reload over a page, single sign-on's redirect, its own link, its form post
+  back to the accounts origin all stay in the window, sign-in sets the cookie,
+  `finish` signs out with it (the fake saw the cookie and an `Origin`), close
+  hides, prints `closed` and waits, browser mode opens `/link` without the code
+  and close there only hides.
+- End to end with os-agent's debug `mauvely-session` (os-agent's HANDOFF).
+
+**Decisions made here.**
+- **Close hides and waits.** website-main re-checks the approving session at
+  the claim, so the window must not sign out before mauvely-session's poll
+  claims the link. A person who approves and closes at once would otherwise
+  burn it. The window writes `closed` and stays alive, hidden, until `finish`.
+- **The header names the page's host** (`mauvely.com`, or the identity
+  provider's during single sign-on), in mono under the title. A window with no
+  address bar should still say whose page the password goes into. It is not
+  an address bar: nothing can be typed there.
+- **The sign-out runs in an isolated world** (`ApplicationWorld`), so page
+  scripts cannot see or replace it. On the wire it is the page's own fetch:
+  same origin, its cookie, and `Origin`, which website-main requires.
+- **Passkey ceremonies are cancelled at once** (`webAuthUxRequested`). The
+  window draws no account picker, PIN or "touch your key" prompt, and an
+  unanswered request would leave the page waiting. The page reports the
+  failure and the person signs in another way.
+- **`QTWEBENGINE_REMOTE_DEBUGGING` and `QTWEBENGINE_CHROMIUM_FLAGS` are
+  cleared**, and Qt gets argv[0] alone: a debugging port is reachable by every
+  local user, and would expose the page and its code.
+- **A renderer that dies exits 3**, so mauvely-session falls back to the
+  kdialog code window and the browser.
+- **app-base's `framelesswindow.{h,cpp}` is copied byte-identical** into
+  `src/ui/`, for the window only. It is a seventh pinned copy that the
+  superproject's table does not list yet: **for the lead**, add it to the
+  table and to the `hash-object` loop.
+
+**Never run.**
+- On Plasma or on Mauvely OS: KWin's placement and focus for a window a user
+  service starts with no activation token, the OpenURI portal handing a link
+  to a Flatpak browser, and the window's icon from the desktop file.
+- Against website-main's real `embed=os` pages (staging only, website-main
+  `1379948`) or any real single sign-on. Google sign-in is expected to refuse
+  the window (`disallowed_useragent`); "Use your browser instead" is the way
+  out, and has only been clicked against the fake.
+- A colour-scheme change while the window is open (the Qt side follows
+  `colorSchemeChanged`; whether the page's `prefers-color-scheme` follows live
+  was not seen).
+- A passkey, a security key, or any WebAuthn prompt.
+- HiDPI. The mark is drawn at the window's device pixel ratio when styled.
+
+**Worth a look.**
+- **The analytics consent card** on the full site: the window keeps no
+  storage, so it asks every time. Whether `embed=os` pages skip it is
+  website-main's call.
+- **The way back from the browser** is "Sign in here instead", which flips the
+  page back; it was not asked for, and costs one button state.
+
 ## 2026-10-16: progress for the copy
 
 Timur tested on Proxmox and took the install for hung. bootc prints
