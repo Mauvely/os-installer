@@ -304,6 +304,14 @@ SigninWindow::SigninWindow(const QUrl &accounts, const QString &code, QWidget *p
     restyle();
 }
 
+bool SigninWindow::event(QEvent *e) {
+    // The mark is drawn for the screen's pixel ratio, which is known only once
+    // the window is on a screen, and changes when it moves to another.
+    if (e->type() == QEvent::Show || e->type() == QEvent::DevicePixelRatioChange)
+        m_mark->setPixmap(mark(Theme::instance().text(), kMark, devicePixelRatioF()));
+    return FramelessWindow::event(e);
+}
+
 void SigninWindow::load(const QUrl &page) {
     m_host->setText(navpolicy::hostLine(page));
     m_view->load(page);

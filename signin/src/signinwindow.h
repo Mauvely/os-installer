@@ -56,6 +56,9 @@ signals:
     /** The person closed the window while it showed the sign-in. */
     void closedByPerson();
 
+protected:
+    bool event(QEvent *e) override;
+
 private:
     void personClosed();
     void useBrowser(bool browser);

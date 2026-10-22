@@ -77,7 +77,8 @@ All against a fake accounts service, never mauvely.com or mauvely.dev.
   `colorSchemeChanged`; whether the page's `prefers-color-scheme` follows live
   was not seen).
 - A passkey, a security key, or any WebAuthn prompt.
-- HiDPI. The mark is drawn at the window's device pixel ratio when styled.
+- HiDPI on real hardware. At scale 2 in the nested sway the mark is crisp:
+  it is drawn when the window is shown and when its pixel ratio changes.
 
 **Worth a look.**
 - **The analytics consent card** on the full site: the window keeps no
